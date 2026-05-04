@@ -1,0 +1,102 @@
+body {
+  background: #0a0a0f;
+  color: white;
+}
+
+/* PAGE */
+.match-page {
+  padding: 40px;
+}
+
+/* TITLE */
+.title {
+  font-size: 36px;
+  margin-bottom: 30px;
+  background: linear-gradient(to right, #6366f1, #a855f7);
+  -webkit-background-clip: text;
+  background-clip: text;  
+  color: transparent;
+}
+
+/* COLUMNS */
+.columns {
+  display: flex;
+  gap: 40px;
+}
+
+/* COLUMN */
+.column {
+  flex: 1;
+}
+
+/* CARD */
+.card {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(15px);
+  padding: 15px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+  border: 1px solid transparent;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(168,85,247,0.3);
+}
+
+/* ACTIVE CARD */
+.card.active {
+  border: 1px solid #a855f7;
+  box-shadow: 0 0 15px rgba(168,85,247,0.6);
+}
+
+/* BUTTON */
+.card button {
+  margin-top: 10px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(to right, #6366f1, #a855f7);
+  color: white;
+  cursor: pointer;
+}
+
+/* MATCH BUTTON */
+.match-btn-container {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.match-btn {
+  padding: 12px 30px;
+  font-size: 18px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(to right, #6366f1, #a855f7);
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.match-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(168,85,247,0.6);
+}
+
+/* MODAL */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 20px;
+}

@@ -1,0 +1,135 @@
+/* 🌌 BACKGROUND */
+.login-container {
+  height: 100vh;
+  background: #05060a;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 1500px;
+}
+
+/* 🌈 GLOW ORBS */
+.glow-orb {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.6;
+}
+
+.orb1 {
+  background: #6a00ff;
+  top: -100px;
+  left: -100px;
+}
+
+.orb2 {
+  background: #00f0ff;
+  bottom: -100px;
+  right: -100px;
+}
+
+/* 🧊 CONTENT */
+.content {
+  text-align: center;
+  transform-style: preserve-3d;
+  animation: float 6s ease-in-out infinite;
+}
+
+/* ✨ TITLE (METALLIC TEXT) */
+.title {
+  font-size: 48px;
+
+  background: linear-gradient(90deg, #6a00ff, #00f0ff);
+
+  background-clip: text;              /* standard */
+  -webkit-background-clip: text;      /* chrome/safari */
+
+  color: transparent;                /* fallback */
+  -webkit-text-fill-color: transparent;
+}
+
+/* 📄 SUBTITLE */
+.subtitle {
+  color: #aaa;
+  margin: 20px 0;
+}
+
+/* 🔘 BUTTON */
+.admin-btn {
+  padding: 12px 25px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.admin-btn:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 0 20px rgba(0,255,255,0.5);
+}
+
+/* 🔐 MODAL */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 🧊 GLASS BOX */
+.modal-box {
+  width: 320px;
+  padding: 30px;
+  border-radius: 15px;
+
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.1);
+
+  transform: translateZ(50px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+
+/* ✨ TITLE */
+.modal-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* INPUT */
+.input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.05);
+  color: white;
+}
+
+/* LOGIN BUTTON */
+.login-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(90deg, #6a00ff, #00f0ff);
+  color: white;
+  cursor: pointer;
+}
+
+/* 🌊 FLOAT ANIMATION */
+@keyframes float {
+  0% { transform: rotateX(5deg) translateY(0px); }
+  50% { transform: rotateX(5deg) translateY(-10px); }
+  100% { transform: rotateX(5deg) translateY(0px); }
+}
