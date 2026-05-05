@@ -145,3 +145,33 @@ exports.loginUser = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// =========================Resend otp======================
+exports.resendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+    user.otp = otp;
+    user.otpExpiry = Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    const verifyUrl = `${process.env.CLIENT_URL}/verify/${user.verifyToken}`;
+
+    const sendEmail = require("../utils/sendEmail");
+    await sendEmail(user.email, otp, verifyUrl);
+
+    res.json({ message: "OTP resent successfully" });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
