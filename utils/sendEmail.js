@@ -2,11 +2,9 @@ const axios = require("axios");
 
 const sendEmail = async (email, otp, verifyUrl) => {
   try {
-
     const htmlContent = `
       <h2>Email Verification</h2>
       <p>Your OTP is: <b>${otp}</b></p>
-      <p>OR</p>
       <a href="${verifyUrl}">Verify Email</a>
     `;
 
@@ -29,10 +27,10 @@ const sendEmail = async (email, otp, verifyUrl) => {
       }
     );
 
-    console.log("✅ Email sent via API");
+    console.log("✅ Email sent");
 
   } catch (error) {
-    console.log("❌ EMAIL API ERROR:", error.response?.data || error.message);
+    console.log("❌ Email error:", error.response?.data || error.message);
   }
 };
 
