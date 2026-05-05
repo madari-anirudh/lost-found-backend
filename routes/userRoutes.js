@@ -5,23 +5,15 @@ const {
   registerUser,
   loginUser,
   verifyOtp,
-  resendotp,
+  resendOtp,
   verifyEmailByLink
 } = require("../controllers/userController");
 
-// REGISTER (send OTP)
+// routes
 router.post("/register", registerUser);
-
-// LOGIN (only verified users)
 router.post("/login", loginUser);
-
-// VERIFY OTP
-router.post("/verify-otp", verifyOtp); 
-
-//resend Otp
-router.post("/resend-otp",resendOtp);
-
-// VERIFICATION LINK
+router.post("/verify-otp", verifyOtp);
+router.post("/resend-otp", resendOtp);
 router.get("/verify/:token", verifyEmailByLink);
 
 module.exports = router;
