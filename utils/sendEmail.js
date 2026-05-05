@@ -6,10 +6,11 @@ const sendEmail = async (email, otp, to,verifyUrl) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "lostandfoundtmu2026@gmail.com",
-        pass: "vtxt rzfr mhqx bpmq"
-      }
-    });
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
 
     const htmlTemplate = `
     <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:30px;">
