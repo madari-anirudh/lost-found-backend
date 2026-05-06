@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendEmail");
-const crypto = require("crypto"); // ✅ ADD THIS
+const crypto = require("crypto");
 
 // =================Generate JWT ==============================
 const generateToken = (id) => {
@@ -10,39 +10,35 @@ const generateToken = (id) => {
   });
 };
 
-// ======================= REGISTER (WITH OTP + LINK) =======================
+// ======================= REGISTER =======================
 exports.registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // check existing user
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // ✅ generate OTP
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-    // ✅ generate verification token
     const verifyToken = crypto.randomBytes(32).toString("hex");
-    console.log("TOKEN GENERATED:", verifyToken);  //===========================================================
-    // ✅ create verification link
-    const verifyUrl = `${process.env.CLIENT_URL}/api/users/verify/${verifyToken}`;
-    user.verifyToken = verifyToken;
+    console.log("TOKEN GENERATED:", verifyToken);
 
-    // ✅ create user
+    const verifyUrl = `${process.env.CLIENT_URL}/api/users/verify/${verifyToken}`;
+
     const user = await User.create({
       name,
       email,
       password,
       otp,
       otpExpiry: Date.now() + 10 * 60 * 1000,
-      verifyToken, // ✅ FIXED
+      verifyToken,
       isVerified: false
     });
-    console.log("USER SAVED TOKEN:", user.verifyToken);   //==================================================
-    // ✅ send email (OTP + link)
+
+    console.log("USER SAVED TOKEN:", user.verifyToken);
+
     await sendEmail(email, otp, verifyUrl);
 
     res.status(201).json({
@@ -74,7 +70,7 @@ exports.verifyOtp = async (req, res) => {
     user.isVerified = true;
     user.otp = null;
     user.otpExpiry = null;
-    user.verifyToken = null; // ✅ clear token too
+    user.verifyToken = null;
 
     await user.save();
 
@@ -91,54 +87,60 @@ exports.verifyOtp = async (req, res) => {
 };
 
 // ======================= VERIFY BY LINK =======================
-exports.registerUser = async (req, res) => {
+exports.verifyEmailByLink = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    console.log("TOKEN RECEIVED:", req.params.token);
 
-    // ✅ check existing user
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+    const user = await User.findOne({ verifyToken: req.params.token });
+
+    console.log("USER FOUND:", user);
+
+    if (!user) {
+      return res.status(400).send("Invalid or expired link");
     }
 
-    // ✅ generate OTP
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    user.isVerified = true;
+    user.verifyToken = null;
+    user.otp = null;
+    user.otpExpiry = null;
 
-    // ✅ generate verification token
-    const verifyToken = crypto.randomBytes(32).toString("hex");
-    console.log("TOKEN GENERATED:", verifyToken);
+    await user.save();
 
-    // ✅ create verification link
-    const verifyUrl = `${process.env.CLIENT_URL}/api/users/verify/${verifyToken}`;
+    res.send("Email verified successfully ✅");
 
-    // ✅ create user (TOKEN SAVED HERE)
-    const user = await User.create({
-      name,
-      email,
-      password,
-      otp,
-      otpExpiry: Date.now() + 10 * 60 * 1000,
-      verifyToken,
-      isVerified: false
-    });
-
-    console.log("USER SAVED TOKEN:", user.verifyToken);
-
-    // ✅ send email (OTP + verify link)
-    await sendEmail(email, otp, verifyUrl);
-
-    res.status(201).json({
-      message: "OTP sent to email",
-      userId: user._id
-    });
-
-  } catch (error) {
-    console.log("REGISTER ERROR:", error);
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    res.status(500).send(err.message);
   }
 };
 
-// =========================Resend otp======================
+// ======================= RESEND OTP =======================
 exports.resendOtp = async (req, res) => {
-  res.json({ message: "Resend working" });
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const verifyToken = crypto.randomBytes(32).toString("hex");
+
+    user.otp = otp;
+    user.otpExpiry = Date.now() + 10 * 60 * 1000;
+    user.verifyToken = verifyToken;
+
+    await user.save();
+
+    const verifyUrl = `${process.env.CLIENT_URL}/api/users/verify/${verifyToken}`;
+
+    await sendEmail(email, otp, verifyUrl);
+
+    res.json({ message: "OTP resent successfully" });
+
+  } catch (error) {
+    console.log("RESEND OTP ERROR:", error);
+    res.status(500).json({ message: error.message });
+  }
 };
