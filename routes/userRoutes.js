@@ -3,13 +3,12 @@ const router = express.Router();
 
 const {
   registerUser,
-  verifyOtp,
   loginUser,
-  verifyEmailByLink,
-  resendOtp   // ✅ MUST EXIST
+  verifyOtp,
+  resendOtp,
+  verifyEmailByLink
 } = require("../controllers/userController");
 
-console.log("resendOtp:", resendOtp);
 // routes
 router.post("/register", registerUser);
 router.post("/login", loginUser);

@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendEmail");
-const crypto = require("crypto");
+const crypto = require("crypto"); // ✅ ADD THIS
 
 // =================Generate JWT ==============================
 const generateToken = (id) => {
@@ -10,35 +10,38 @@ const generateToken = (id) => {
   });
 };
 
-// ======================= REGISTER =======================
+// ======================= REGISTER (WITH OTP + LINK) =======================
 exports.registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    // check existing user
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
 
+    // ✅ generate OTP
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
+    // ✅ generate verification token
     const verifyToken = crypto.randomBytes(32).toString("hex");
-    console.log("TOKEN GENERATED:", verifyToken);
 
+    // ✅ create verification link
     const verifyUrl = `${process.env.CLIENT_URL}/api/users/verify/${verifyToken}`;
 
+    // ✅ create user
     const user = await User.create({
       name,
       email,
       password,
       otp,
       otpExpiry: Date.now() + 10 * 60 * 1000,
-      verifyToken,
+      verifyToken, // ✅ FIXED
       isVerified: false
     });
 
-    console.log("USER SAVED TOKEN:", user.verifyToken);
-
+    // ✅ send email (OTP + link)
     await sendEmail(email, otp, verifyUrl);
 
     res.status(201).json({
@@ -70,7 +73,7 @@ exports.verifyOtp = async (req, res) => {
     user.isVerified = true;
     user.otp = null;
     user.otpExpiry = null;
-    user.verifyToken = null;
+    user.verifyToken = null; // ✅ clear token too
 
     await user.save();
 
@@ -89,11 +92,7 @@ exports.verifyOtp = async (req, res) => {
 // ======================= VERIFY BY LINK =======================
 exports.verifyEmailByLink = async (req, res) => {
   try {
-    console.log("TOKEN RECEIVED:", req.params.token);
-
     const user = await User.findOne({ verifyToken: req.params.token });
-
-    console.log("USER FOUND:", user);
 
     if (!user) {
       return res.status(400).send("Invalid or expired link");
@@ -113,7 +112,41 @@ exports.verifyEmailByLink = async (req, res) => {
   }
 };
 
-// ======================= RESEND OTP =======================
+// ======================= LOGIN =======================
+exports.loginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    if (!(await user.matchPassword(password))) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // ❗ BLOCK if not verified
+    if (!user.isVerified) {
+      return res.status(401).json({
+        message: "Please verify your email first"
+      });
+    }
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user._id)
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// =========================Resend otp======================
 exports.resendOtp = async (req, res) => {
   try {
     const { email } = req.body;
@@ -125,22 +158,20 @@ exports.resendOtp = async (req, res) => {
     }
 
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
-    const verifyToken = crypto.randomBytes(32).toString("hex");
 
     user.otp = otp;
     user.otpExpiry = Date.now() + 10 * 60 * 1000;
-    user.verifyToken = verifyToken;
 
     await user.save();
 
-    const verifyUrl = `${process.env.CLIENT_URL}/api/users/verify/${verifyToken}`;
+    const verifyUrl = `${process.env.CLIENT_URL}/verify/${user.verifyToken}`;
 
-    await sendEmail(email, otp, verifyUrl);
+    const sendEmail = require("../utils/sendEmail");
+    await sendEmail(user.email, otp, verifyUrl);
 
     res.json({ message: "OTP resent successfully" });
 
-  } catch (error) {
-    console.log("RESEND OTP ERROR:", error);
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
