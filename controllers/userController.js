@@ -26,9 +26,10 @@ exports.registerUser = async (req, res) => {
 
     // ✅ generate verification token
     const verifyToken = crypto.randomBytes(32).toString("hex");
-
+    console.log("TOKEN GENERATED:", verifyToken);  //===========================================================
     // ✅ create verification link
     const verifyUrl = `${process.env.CLIENT_URL}/api/users/verify/${verifyToken}`;
+    user.verifyToken = verifyToken;
 
     // ✅ create user
     const user = await User.create({
@@ -40,7 +41,7 @@ exports.registerUser = async (req, res) => {
       verifyToken, // ✅ FIXED
       isVerified: false
     });
-
+    console.log("USER SAVED TOKEN:", user.verifyToken);   //==================================================
     // ✅ send email (OTP + link)
     await sendEmail(email, otp, verifyUrl);
 
@@ -91,8 +92,10 @@ exports.verifyOtp = async (req, res) => {
 
 // ======================= VERIFY BY LINK =======================
 exports.verifyEmailByLink = async (req, res) => {
+  console.log("TOKEN RECEIVED:", req.params.token); //==============================================
   try {
     const user = await User.findOne({ verifyToken: req.params.token });
+    console.log("USER FOUND:", user); //========================================================
 
     if (!user) {
       return res.status(400).send("Invalid or expired link");
