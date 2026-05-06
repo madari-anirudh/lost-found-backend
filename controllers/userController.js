@@ -151,19 +151,23 @@ exports.resendOtp = async (req, res) => {
 
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
+    const verifyToken = require("crypto")
+      .randomBytes(32)
+      .toString("hex");
+
     user.otp = otp;
     user.otpExpiry = Date.now() + 10 * 60 * 1000;
+    user.verifyToken = verifyToken;
 
     await user.save();
 
-    const verifyUrl = `${process.env.CLIENT_URL}/verify/${user.verifyToken}`;
+    const verifyUrl = `${process.env.CLIENT_URL}/api/users/verify/${verifyToken}`;
 
-    const sendEmail = require("../utils/sendEmail");
-    await sendEmail(user.email, otp, verifyUrl);
+    await sendEmail(email, otp, verifyUrl);
 
     res.json({ message: "OTP resent successfully" });
 
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
