@@ -20,12 +20,12 @@ function MatchItems() {
   }, []);
 
   const fetchLost = async () => {
-    const res = await API.get("/admin/lost-items?status=searching");
+    const res = await API.get("/api/admin/lost-items?status=searching");
     setLostItems(res.data);
   };
 
   const fetchFound = async () => {
-    const res = await API.get("/admin/found-items?status=searching");
+    const res = await API.get("/api/admin/found-items?status=searching");
     setFoundItems(res.data);
   };
 
@@ -39,7 +39,7 @@ function MatchItems() {
     try {
       setLoading(true);
 
-      await axios.post("http://localhost:5000/api/admin/match", {
+      await axios.post("https://lost-found-api-q597.onrender.com/api/admin/match", {
         lostItemId: selectedLost,
         foundItemId: selectedFound
       });
