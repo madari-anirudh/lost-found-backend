@@ -91,61 +91,52 @@ exports.verifyOtp = async (req, res) => {
 };
 
 // ======================= VERIFY BY LINK =======================
-exports.verifyEmailByLink = async (req, res) => {
-  console.log("TOKEN RECEIVED:", req.params.token); //==============================================
+const crypto = require("crypto"); // ✅ make sure this is imported at top
+
+exports.registerUser = async (req, res) => {
   try {
-    const user = await User.findOne({ verifyToken: req.params.token });
-    console.log("USER FOUND:", user); //========================================================
+    const { name, email, password } = req.body;
 
-    if (!user) {
-      return res.status(400).send("Invalid or expired link");
+    // ✅ check existing user
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "User already exists" });
     }
 
-    user.isVerified = true;
-    user.verifyToken = null;
-    user.otp = null;
-    user.otpExpiry = null;
+    // ✅ generate OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-    await user.save();
+    // ✅ generate verification token
+    const verifyToken = crypto.randomBytes(32).toString("hex");
+    console.log("TOKEN GENERATED:", verifyToken);
 
-    res.send("Email verified successfully ✅");
+    // ✅ create verification link
+    const verifyUrl = `${process.env.CLIENT_URL}/api/users/verify/${verifyToken}`;
 
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
-};
-
-// ======================= LOGIN =======================
-exports.loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    if (!(await user.matchPassword(password))) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    // ❗ BLOCK if not verified
-    if (!user.isVerified) {
-      return res.status(401).json({
-        message: "Please verify your email first"
-      });
-    }
-
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      token: generateToken(user._id)
+    // ✅ create user (TOKEN SAVED HERE)
+    const user = await User.create({
+      name,
+      email,
+      password,
+      otp,
+      otpExpiry: Date.now() + 10 * 60 * 1000,
+      verifyToken,
+      isVerified: false
     });
 
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.log("USER SAVED TOKEN:", user.verifyToken);
+
+    // ✅ send email (OTP + verify link)
+    await sendEmail(email, otp, verifyUrl);
+
+    res.status(201).json({
+      message: "OTP sent to email",
+      userId: user._id
+    });
+
+  } catch (error) {
+    console.log("REGISTER ERROR:", error);
+    res.status(500).json({ message: error.message });
   }
 };
 
