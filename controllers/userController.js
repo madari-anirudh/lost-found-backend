@@ -91,8 +91,6 @@ exports.verifyOtp = async (req, res) => {
 };
 
 // ======================= VERIFY BY LINK =======================
-const crypto = require("crypto"); // ✅ make sure this is imported at top
-
 exports.registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
