@@ -140,34 +140,5 @@ exports.registerUser = async (req, res) => {
 
 // =========================Resend otp======================
 exports.resendOtp = async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
-
-    const verifyToken = require("crypto")
-      .randomBytes(32)
-      .toString("hex");
-
-    user.otp = otp;
-    user.otpExpiry = Date.now() + 10 * 60 * 1000;
-    user.verifyToken = verifyToken;
-
-    await user.save();
-
-    const verifyUrl = `${process.env.CLIENT_URL}/api/users/verify/${verifyToken}`;
-
-    await sendEmail(email, otp, verifyUrl);
-
-    res.json({ message: "OTP resent successfully" });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  res.json({ message: "Resend working" });
 };
