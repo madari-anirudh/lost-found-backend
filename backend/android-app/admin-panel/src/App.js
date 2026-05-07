@@ -7,26 +7,71 @@ import LostItems from "./pages/LostItems";
 import FoundItems from "./pages/FoundItems";
 import MatchItems from "./pages/MatchItems";
 import MatchedItems from "./pages/MatchedItems";
-function App(){
 
-  return(
+import ProtectedRoute from "./components/ProtectedRoute";
+
+function App() {
+
+  return (
 
     <BrowserRouter>
 
       <Routes>
 
-        <Route path="/" element={<Login/>} />
-        <Route path="/dashboard" element={<Dashboard/>} />
-        <Route path="/lost" element={<LostItems/>} />
-        <Route path="/found" element={<FoundItems/>} />
-        <Route path="/match" element={<MatchItems/>} />
-        <Route path="/matched" element={<MatchedItems/>} />
+        {/* PUBLIC */}
+        <Route path="/" element={<Login />} />
+
+        {/* PROTECTED ROUTES */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/lost"
+          element={
+            <ProtectedRoute>
+              <LostItems />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/found"
+          element={
+            <ProtectedRoute>
+              <FoundItems />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/match"
+          element={
+            <ProtectedRoute>
+              <MatchItems />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/matched"
+          element={
+            <ProtectedRoute>
+              <MatchedItems />
+            </ProtectedRoute>
+          }
+        />
+
       </Routes>
 
     </BrowserRouter>
 
   );
-
 }
 
 export default App;
