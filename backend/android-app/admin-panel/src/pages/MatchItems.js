@@ -29,13 +29,13 @@ function MatchItems() {
   }
 };
 
-  const fetchLost = async () => {
+const fetchFound = async () => {
   try {
-    const res = await API.get("/admin/lost-items?status=searching");
-    setLostItems(res.data);
+    const res = await API.get("/admin/found-items?status=searching");
+    setFoundItems(res.data);
   } catch (err) {
     console.log(err);
-    alert("Failed to load lost items");
+    alert("Failed to load found items");
   }
 };
 
