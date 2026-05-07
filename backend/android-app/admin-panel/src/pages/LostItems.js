@@ -13,7 +13,7 @@ function LostItems() {
 
   const fetchItems = async () => {
     try {
-      const res = await API.get("/api/admin/lost-items");
+      const res = await API.get("/admin/lost-items");
       setItems(res.data);
     } catch (err) {
       console.log(err);

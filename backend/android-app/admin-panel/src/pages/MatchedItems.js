@@ -12,7 +12,7 @@ function MatchedItems() {
 
   const fetchItems = async () => {
     try {
-      const res = await API.get("/api/admin/matched-items");
+      const res = await API.get("/admin/matched-items");
       setItems(res.data);
     } catch (err) {
       console.log(err);

@@ -13,7 +13,7 @@ function FoundItems() {
 
   const fetchItems = async () => {
     try {
-      const res = await API.get("/api/admin/found-items");
+      const res = await API.get("/admin/found-items");
       setItems(res.data);
     } catch (err) {
       console.log(err);
