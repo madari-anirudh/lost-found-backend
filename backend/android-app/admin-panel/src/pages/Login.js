@@ -10,7 +10,7 @@ function Login() {
 
   const login = async () => {
     try {
-      const res = await API.post("/api/admin/login", { email, password });
+      const res = await API.post("/admin/login", { email, password });
       localStorage.setItem("adminToken", res.data.token);
       window.location = "/dashboard";
     } catch (err) {
