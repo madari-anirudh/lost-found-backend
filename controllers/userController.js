@@ -114,7 +114,11 @@ exports.verifyEmailByLink = async (req, res) => {
 
 // ======================= LOGIN =======================
 exports.loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const email = req.body.email
+  .trim()
+  .toLowerCase();
+
+const password = req.body.password;
 
   try {
     const user = await User.findOne({ email });
@@ -173,5 +177,149 @@ exports.resendOtp = async (req, res) => {
 
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+//   Forgot Password
+exports.forgotPassword = async (req, res) => {
+
+  try {
+
+    const email = req.body.email
+      .trim()
+      .toLowerCase();
+
+    console.log("Forgot Password Email:", email);
+
+    const user = await User.findOne({
+      email: email
+    });
+
+    if (!user) {
+
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    // GENERATE OTP
+
+    const otp = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
+    user.resetOtp = otp;
+
+    user.resetOtpExpire =
+      Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    // SEND EMAIL
+
+    await sendEmail(
+      user.email,
+      otp,
+      "https://lost-found-api-q597.onrender.com/"
+    );
+
+    res.status(200).json({
+      message: "Reset OTP sent"
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+// VERIFY RESET OTP API
+exports.verifyResetOtp = async (req, res) => {
+
+  try {
+
+    const { email, otp } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    if (
+      user.resetOtp !== otp ||
+      user.resetOtpExpire < Date.now()
+    ) {
+
+      return res.status(400).json({
+        message: "Invalid or expired OTP"
+      });
+    }
+
+    res.json({
+      message: "OTP verified"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
+       // RESET PASSWORD API
+const bcrypt = require("bcryptjs");
+
+exports.resetPassword = async (req, res) => {
+
+  try {
+
+    const { email, otp, newPassword } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    if (
+      user.resetOtp !== otp ||
+      user.resetOtpExpire < Date.now()
+    ) {
+
+      return res.status(400).json({
+        message: "Invalid or expired OTP"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashedPassword;
+
+    user.resetOtp = null;
+    user.resetOtpExpire = null;
+
+    await user.save();
+
+    res.json({
+      message: "Password reset successful"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
   }
 };

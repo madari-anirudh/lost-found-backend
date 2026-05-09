@@ -6,7 +6,10 @@ const {
   loginUser,
   verifyOtp,
   resendOtp,
-  verifyEmailByLink
+  verifyEmailByLink,
+  forgotPassword,
+  verifyResetOtp,
+  resetPassword
 } = require("../controllers/userController");
 
 // routes
@@ -15,5 +18,8 @@ router.post("/login", loginUser);
 router.post("/verify-otp", verifyOtp);
 router.post("/resend-otp", resendOtp);
 router.get("/verify/:token", verifyEmailByLink);
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-reset-otp", verifyResetOtp);
+router.post("/reset-password", resetPassword);
 
 module.exports = router;

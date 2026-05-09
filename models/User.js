@@ -12,7 +12,9 @@ const userSchema = new mongoose.Schema({
   default: false
 },
 otp: String,
-otpExpiry: Date
+otpExpiry: Date,
+resetOtp: String,
+resetOtpExpire: Date,
 }, { timestamps: true });
 
 // Hash password
