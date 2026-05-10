@@ -288,9 +288,12 @@ exports.resetPassword = async (req, res) => {
 
     const { email, otp, newPassword } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      email: email.toLowerCase()
+    });
 
     if (!user) {
+
       return res.status(404).json({
         message: "User not found"
       });
@@ -306,9 +309,10 @@ exports.resetPassword = async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    // ✅ SET NORMAL PASSWORD
+    // model pre-save hook will hash it automatically
 
-    user.password = hashedPassword;
+    user.password = newPassword;
 
     user.resetOtp = null;
     user.resetOtpExpire = null;
@@ -324,6 +328,5 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({
       message: error.message
     });
-
   }
 };
