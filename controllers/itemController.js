@@ -178,39 +178,67 @@ exports.confirmReceived = async (req, res) => {
 };
 
 // ================= MATCH ITEMS =================
+
 exports.matchItem = async (req, res) => {
+
   try {
-    console.log("🔥 MATCH API CALLED");
-console.log("BODY:", req.body);
 
     const { lostItemId, foundItemId } = req.body;
 
     const lostItem = await Item.findById(lostItemId);
+
     const foundItem = await Item.findById(foundItemId);
 
     if (!lostItem || !foundItem) {
-      return res.status(404).json({ message: "Item not found" });
+
+      return res.status(404).json({
+        message: "Item not found"
+      });
     }
 
-    // ✅ CREATE MATCH RECORD
+    // CREATE MATCH COLLECTION
     await Match.create({
+
       lostItem: lostItem._id,
       foundItem: foundItem._id,
+
       lostUser: lostItem.userId,
       foundUser: foundItem.userId
     });
 
-    // ✅ UPDATE STATUS ONLY
+    // ================= LOST ITEM =================
+
     lostItem.status = "matched";
+
+    // SAVE MATCHED ITEM
+    lostItem.matchedItemId = foundItem._id;
+
+    // SAVE MATCHED USER
+    lostItem.matchedWith = foundItem.userId;
+
+    // ================= FOUND ITEM =================
+
     foundItem.status = "matched";
 
+    foundItem.matchedItemId = lostItem._id;
+
+    foundItem.matchedWith = lostItem.userId;
+
+    // SAVE BOTH
     await lostItem.save();
+
     await foundItem.save();
 
-    res.json({ message: "Matched successfully" });
+    res.json({
+      message: "Matched successfully"
+    });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: error.message });
+
+    console.log(error);
+
+    res.status(500).json({
+      message: error.message
+    });
   }
 };
