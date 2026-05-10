@@ -57,16 +57,17 @@ exports.getAllItems = async (req, res) => {
 };
 
 // ================= getMyItems =================
+
 exports.getMyItems = async (req, res) => {
-  
+
   try {
 
-    // USER ITEMS
+    // ✅ FIXED userId
     const items = await Item.find({
-      user: req.user.id
+      userId: req.user.id
     }).sort({ createdAt: -1 });
 
-    // LOOP ITEMS
+    // ADD MATCHED ITEM DATA
     const updatedItems = await Promise.all(
 
       items.map(async (item) => {
@@ -82,7 +83,12 @@ exports.getMyItems = async (req, res) => {
 
         // NO MATCH
         if (!match) {
-          return item;
+
+          const obj = item.toObject();
+
+          obj.matchedWith = null;
+
+          return obj;
         }
 
         // GET OPPOSITE ITEM
@@ -104,9 +110,10 @@ exports.getMyItems = async (req, res) => {
           );
         }
 
-        // ADD MATCHED DATA
+        // CONVERT OBJECT
         const obj = item.toObject();
 
+        // ADD MATCHED ITEM
         obj.matchedWith = matchedItem;
 
         return obj;
