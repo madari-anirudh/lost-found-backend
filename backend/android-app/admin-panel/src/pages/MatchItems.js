@@ -49,7 +49,7 @@ const fetchFound = async () => {
     try {
       setLoading(true);
 
-      await axios.post("/admin/match", {
+      await API.post("/admin/match", {
         lostItemId: selectedLost,
         foundItemId: selectedFound
       });
