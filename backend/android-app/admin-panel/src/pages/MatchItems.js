@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import API from "../api/api";
-import axios from "axios";
 import "./MatchItems.css";
 
 function MatchItems() {

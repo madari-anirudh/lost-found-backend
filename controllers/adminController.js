@@ -97,54 +97,70 @@ exports.getFoundItems = async (req, res) => {
 // =============================
 
 exports.matchItems = async (req, res) => {
-  try {
 
-    console.log("🔥 ADMIN MATCH API HIT");
-    console.log("BODY:", req.body);
+  try {
 
     const { lostItemId, foundItemId } = req.body;
 
+    const Item = require("../models/Item");
+
+    // FIND ITEMS
     const lostItem = await Item.findById(lostItemId);
+
     const foundItem = await Item.findById(foundItemId);
 
     if (!lostItem || !foundItem) {
-      return res.status(404).json({ message: "Item not found" });
+
+      return res.status(404).json({
+        message: "Items not found"
+      });
     }
 
-    // ✅ CREATE MATCH ENTRY (THIS WAS MISSING)
-    const newMatch = await Match.create({
-      lostItem: lostItem._id,
-      foundItem: foundItem._id,
-      lostUser: lostItem.userId,
-      foundUser: foundItem.userId
-    });
-
-    console.log("✅ MATCH SAVED:", newMatch);
-
-    // ✅ UPDATE ITEMS STATUS
+    // UPDATE STATUS
     lostItem.status = "matched";
+
     foundItem.status = "matched";
 
+    // LINK ITEMS
+    lostItem.matchedWith = foundItem._id;
+
+    foundItem.matchedWith = lostItem._id;
+
     await lostItem.save();
+
     await foundItem.save();
 
-    res.json({ message: "Matched successfully" });
+    // SOCKET NOTIFICATION
+    if (global.io) {
 
-    // Create notification for LOST USER
-await Notification.create({
-  userId: lostItem.userId,
-  message: `Your item "${lostItem.title}" has been matched!`
-});
+      global.io.emit("itemMatched", {
 
-// Create notification for FOUND USER
-await Notification.create({
-  userId: foundItem.userId,
-  message: `Your found item "${foundItem.title}" has been matched!`
-});
+        userId: lostItem.user,
+
+        message:
+          `Your lost item "${lostItem.title}" may be matched!`
+      });
+
+      global.io.emit("itemMatched", {
+
+        userId: foundItem.user,
+
+        message:
+          `Your found item "${foundItem.title}" may be matched!`
+      });
+    }
+
+    res.json({
+      message: "Items matched successfully"
+    });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: error.message });
+
+    console.log(error);
+
+    res.status(500).json({
+      message: error.message
+    });
   }
 };
 
