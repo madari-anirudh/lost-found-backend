@@ -56,10 +56,9 @@ exports.getAllItems = async (req, res) => {
   }
 };
 
-// ================= GET MY ITEMS =================
-
+// ================= getMyItems =================
 exports.getMyItems = async (req, res) => {
-
+  
   try {
 
     // USER ITEMS
