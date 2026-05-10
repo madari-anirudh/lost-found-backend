@@ -60,12 +60,9 @@ exports.getAllItems = async (req, res) => {
 exports.getMyItems = async (req, res) => {
   try {
 
-    const items = await Item.find({
+   const items = await Item.find({
   user: req.user.id
-})
-.populate("matchedWith")
-.sort({ createdAt: -1 });
-
+});
     const result = [];
 
     console.log("==== TOTAL ITEMS ====", items.length);
