@@ -62,15 +62,15 @@ exports.getMyItems = async (req, res) => {
 
   try {
 
-    // ✅ FIXED userId
     const items = await Item.find({
       userId: req.user.id
     }).sort({ createdAt: -1 });
 
-    // ADD MATCHED ITEM DATA
     const updatedItems = await Promise.all(
 
       items.map(async (item) => {
+
+        const obj = item.toObject();
 
         // FIND MATCH
         const match = await Match.findOne({
@@ -79,14 +79,13 @@ exports.getMyItems = async (req, res) => {
             { lostItem: item._id },
             { foundItem: item._id }
           ]
+
         });
 
         // NO MATCH
         if (!match) {
 
-          const obj = item.toObject();
-
-          obj.matchedWith = null;
+          obj.matchDetails = null;
 
           return obj;
         }
@@ -110,21 +109,21 @@ exports.getMyItems = async (req, res) => {
           );
         }
 
-        // CONVERT OBJECT
-        const obj = item.toObject();
+        // ADD MATCH DETAILS
+        obj.matchDetails = {
 
-        // ADD MATCHED ITEM
-        obj.matchedWith = {
-  title: matchedItem.title,
-  description: matchedItem.description,
-  phone: matchedItem.phone,
-  location: matchedItem.location,
-  image: matchedItem.image
-};
+          title: matchedItem.title,
+          description: matchedItem.description,
+          phone: matchedItem.phone,
+          location: matchedItem.location,
+          image: matchedItem.image,
+          type: matchedItem.type
+        };
 
         return obj;
 
       })
+
     );
 
     res.json(updatedItems);
