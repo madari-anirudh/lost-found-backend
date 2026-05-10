@@ -54,19 +54,28 @@ exports.getLostItems = async (req, res) => {
 
   try {
 
-    const items = await Item.find({
-      type: "lost",
-      status: "searching"
-    }).populate("userId");
+    const status = req.query.status;
+
+    let filter = {
+      type: "lost"
+    };
+
+    // FILTER STATUS
+    if (status) {
+      filter.status = status;
+    }
+
+    const items = await Item.find(filter)
+      .sort({ createdAt: -1 });
 
     res.json(items);
 
   } catch (error) {
 
-    res.status(500).json({ error: error.message });
-
+    res.status(500).json({
+      message: error.message
+    });
   }
-
 };
 
 
@@ -77,18 +86,27 @@ exports.getFoundItems = async (req, res) => {
 
   try {
 
-    const items = await Item.find({
+    const status = req.query.status;
+
+    let filter = {
       type: "found"
-    }).populate("userId");
+    };
+
+    if (status) {
+      filter.status = status;
+    }
+
+    const items = await Item.find(filter)
+      .sort({ createdAt: -1 });
 
     res.json(items);
 
   } catch (error) {
 
-    res.status(500).json({ error: error.message });
-
+    res.status(500).json({
+      message: error.message
+    });
   }
-
 };
 
 
