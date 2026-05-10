@@ -114,7 +114,13 @@ exports.getMyItems = async (req, res) => {
         const obj = item.toObject();
 
         // ADD MATCHED ITEM
-        obj.matchedWith = matchedItem;
+        obj.matchedWith = {
+  title: matchedItem.title,
+  description: matchedItem.description,
+  phone: matchedItem.phone,
+  location: matchedItem.location,
+  image: matchedItem.image
+};
 
         return obj;
 
