@@ -117,19 +117,24 @@ exports.matchItems = async (req, res) => {
     }
 
     // UPDATE STATUS
-    lostItem.status = "matched";
+    
+    // UPDATE BOTH ITEMS
 
-    foundItem.status = "matched";
+await Item.findByIdAndUpdate(
+  lostItemId,
+  {
+    status: "matched",
+    matchedWith: foundItemId
+  }
+);
 
-    // LINK ITEMS
-    lostItem.matchedWith = foundItem._id;
-
-    foundItem.matchedWith = lostItem._id;
-
-    await lostItem.save();
-
-    await foundItem.save();
-
+await Item.findByIdAndUpdate(
+  foundItemId,
+  {
+    status: "matched",
+    matchedWith: lostItemId
+  }
+);
     // SOCKET NOTIFICATION
     if (global.io) {
 
