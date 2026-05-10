@@ -57,86 +57,75 @@ exports.getAllItems = async (req, res) => {
 };
 
 // ================= GET MY ITEMS =================
+
 exports.getMyItems = async (req, res) => {
+
   try {
 
-   const items = await Item.find({
-  user: req.user.id
-})
-.populate("matchedWith")
-.sort({ createdAt: -1 });
-    const result = [];
+    // USER ITEMS
+    const items = await Item.find({
+      user: req.user.id
+    }).sort({ createdAt: -1 });
 
-    console.log("==== TOTAL ITEMS ====", items.length);
+    // LOOP ITEMS
+    const updatedItems = await Promise.all(
 
-    for (let item of items) {
+      items.map(async (item) => {
 
-      let finder = null;
-
-      console.log("\n🔹 ITEM:", item._id);
-      console.log("STATUS:", item.status);
-      console.log("TYPE:", item.type);
-
-      if (item.status === "matched") {
-
-        console.log("➡️ Searching match for item:", item._id);
-
+        // FIND MATCH
         const match = await Match.findOne({
+
           $or: [
             { lostItem: item._id },
             { foundItem: item._id }
           ]
-        })
-        .populate("lostUser", "name")        // ✅ only name
-        .populate("foundUser", "name")       // ✅ only name
-        .populate("lostItem", "phone")       // ✅ phone from item
-        .populate("foundItem", "phone");     // ✅ phone from item
+        });
 
-        console.log("MATCH RESULT:", match);
+        // NO MATCH
+        if (!match) {
+          return item;
+        }
 
-        if (match) {
+        // GET OPPOSITE ITEM
+        let matchedItem;
 
-          if (item.type === "lost") {
+        if (
+          match.lostItem.toString() ===
+          item._id.toString()
+        ) {
 
-            finder = {
-              name: match.foundUser?.name || "Unknown",
-              phone: match.foundItem?.phone || "Not Available"
-            };
-
-            console.log("✅ Finder (FOUND USER):", finder);
-
-          } else {
-
-            finder = {
-              name: match.lostUser?.name || "Unknown",
-              phone: match.lostItem?.phone || "Not Available"
-            };
-
-            console.log("✅ Finder (LOST USER):", finder);
-          }
+          matchedItem = await Item.findById(
+            match.foundItem
+          );
 
         } else {
-          console.log("❌ NO MATCH FOUND IN Match COLLECTION");
+
+          matchedItem = await Item.findById(
+            match.lostItem
+          );
         }
-      }
 
-      result.push({
-        ...item.toObject(),
-        finder: finder
-      });
-    }
+        // ADD MATCHED DATA
+        const obj = item.toObject();
 
-    console.log("==== FINAL RESULT ====");
-    console.log(JSON.stringify(result, null, 2));
+        obj.matchedWith = matchedItem;
 
-    res.json(result);
+        return obj;
+
+      })
+    );
+
+    res.json(updatedItems);
 
   } catch (error) {
-    console.log("ERROR:", error);
-    res.status(500).json({ error: error.message });
+
+    console.log(error);
+
+    res.status(500).json({
+      message: error.message
+    });
   }
 };
-
 // ================= GET SINGLE ITEM =================
 exports.getSingleItem = async (req, res) => {
   try {
